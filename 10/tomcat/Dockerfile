@@ -17,7 +17,10 @@
 # Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 # 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 # ---------------------------------------------------------------------------
-FROM tomcat:8-jre8
+FROM tomcat:8-jre8-slim
+
+ARG DB=mysql
+#ARG DB=postgres
 
 #    ____  ____  ____      ____  _   __        _
 #   |_  _||_  _||_  _|    |_  _|(_) [  |  _   (_)
@@ -30,48 +33,20 @@ MAINTAINER Vincent Massol <vincent@massol.net>
 
 # Note: when using docker-compose, the ENV values below are overridden from the .env file.
 
-# Install LibreOffice + other tools
-# Note that procps is required to get ps which is used by JODConverter to start LibreOffice
-RUN apt-get update && \
-  apt-get --no-install-recommends -y install \
-    curl \
-    libreoffice \
-    unzip \
-    procps \
-    libpostgresql-jdbc-java && \
-  rm -rf /var/lib/apt/lists/*
-
 # Install XWiki as the ROOT webapp context in Tomcat
 # Create the Tomcat temporary directory
 # Configure the XWiki permanent directory
-ENV XWIKI_VERSION=9.11.8
+ENV XWIKI_VERSION=10.8.1
 ENV XWIKI_URL_PREFIX "http://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-distribution-war/${XWIKI_VERSION}"
-ENV XWIKI_DOWNLOAD_SHA256 e7b6f563012349dad2051fa7bb2ba5a5c2e736d11fcc41363a6acde16a4c128c
-RUN rm -rf /usr/local/tomcat/webapps/* && \
-  mkdir -p /usr/local/tomcat/temp && \
-  mkdir -p /usr/local/xwiki/data && \
-  curl -fSL "${XWIKI_URL_PREFIX}/xwiki-platform-distribution-war-${XWIKI_VERSION}.war" -o xwiki.war && \
-  echo "$XWIKI_DOWNLOAD_SHA256 xwiki.war" | sha256sum -c - && \
-  unzip -d /usr/local/tomcat/webapps/ROOT xwiki.war && \
-  rm -f xwiki.war
+ENV XWIKI_DOWNLOAD_SHA256 ed9436b5704e8cd4bc399c017f2ef7cf32e8f18f4e75a4fcc52782d933e9893c
 
-# Copy the JDBC driver in the XWiki webapp
-RUN cp /usr/share/java/postgresql-jdbc4.jar /usr/local/tomcat/webapps/ROOT/WEB-INF/lib/
+# generic
+COPY root/. /
 
-# Configure Tomcat. For example set the memory for the Tomcat JVM since the default value is too small for XWiki
-COPY tomcat/setenv.sh /usr/local/tomcat/bin/
+# Use a proper readable bash file!
+RUN /bin/bash -c "source /build/xwiki-tomcat.sh"
 
-# Setup the XWiki Hibernate configuration
-COPY xwiki/hibernate.cfg.xml /usr/local/tomcat/webapps/ROOT/WEB-INF/hibernate.cfg.xml
-
-# Set a specific distribution id in XWiki for this docker packaging.
-RUN sed -i 's/<id>org.xwiki.platform:xwiki-platform-distribution-war/<id>org.xwiki.platform:xwiki-platform-distribution-docker/' \
-  /usr/local/tomcat/webapps/ROOT/META-INF/extension.xed
-
-# Add scripts required to make changes to XWiki configuration files at execution time
-# Note: we don't run CHMOD since 1) it's not required since the executabe bit is already set in git and 2) running
-# CHMOD after a COPY will sometimes fail, depending on different host-specific factors (especially on AUFS).
-COPY xwiki/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+USER xwiki
 
 # Make the XWiki directory (the permanent directory is included in it) persist on the host (so that it's not recreated
 # across runs)
