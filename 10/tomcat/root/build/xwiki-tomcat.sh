@@ -1,6 +1,6 @@
 # don't run as root
-groupadd -g 888 xwiki
-useradd -r -u 888 -g xwiki xwiki
+# http://blog.dscpl.com.au/2015/12/random-user-ids-when-running-docker.html
+adduser --disabled-password --uid 888 --gid 0 --gecos "Xwiki" xwiki
  
 # Install LibreOffice + other tools
 # Note that procps is required to get ps which is used by JODConverter to start LibreOffice
@@ -19,7 +19,8 @@ mkdir -p /usr/local/xwiki/data
 
 # Use a local war if present (saves repeated downloading while debugging)
 if [ ! -f /build/xwiki-${XWIKI_VERSION}.war ]; then
-	curl -fSL "${XWIKI_URL_PREFIX}/xwiki-platform-distribution-war-${XWIKI_VERSION}.war" -o "/build/xwiki-${XWIKI_VERSION}.war"
+	curl -fSL "${XWIKI_URL_PREFIX}/${XWIKI_VERSION}/xwiki-platform-distribution-war-${XWIKI_VERSION}.war" \
+	     -o   "/build/xwiki-${XWIKI_VERSION}.war"
 fi
 
 echo "$XWIKI_DOWNLOAD_SHA256 /build/xwiki-${XWIKI_VERSION}.war" | sha256sum -c -
@@ -59,6 +60,9 @@ rm -rf /var/lib/apt/lists/*
 rm -rf /build 
 
 #ensure xwiki ownership
-chown -R xwiki:xwiki /usr/local/tomcat/webapps/ROOT
-chown -R xwiki:xwiki /usr/local/tomcat/temp
-chown -R xwiki:xwiki /usr/local/xwiki/data
+chmod -R ug+w /usr/local/tomcat/webapps/ROOT
+chmod -R ug+w /usr/local/tomcat/temp
+chmod -R ug+w /usr/local/xwiki/data
+chown -R xwiki:root /usr/local/tomcat/webapps/ROOT
+chown -R xwiki:root /usr/local/tomcat/temp
+chown -R xwiki:root /usr/local/xwiki/data

@@ -19,9 +19,6 @@
 # ---------------------------------------------------------------------------
 FROM tomcat:8-jre8-slim
 
-ARG DB=mysql
-#ARG DB=postgres
-
 #    ____  ____  ____      ____  _   __        _
 #   |_  _||_  _||_  _|    |_  _|(_) [  |  _   (_)
 #     \ \  / /    \ \  /\  / /  __   | | / ]  __
@@ -31,14 +28,17 @@ ARG DB=mysql
 
 MAINTAINER Vincent Massol <vincent@massol.net>
 
-# Note: when using docker-compose, the ENV values below are overridden from the .env file.
-
-# Install XWiki as the ROOT webapp context in Tomcat
-# Create the Tomcat temporary directory
-# Configure the XWiki permanent directory
-ENV XWIKI_VERSION=10.8.1
-ENV XWIKI_URL_PREFIX "http://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-distribution-war/${XWIKI_VERSION}"
-ENV XWIKI_DOWNLOAD_SHA256 ed9436b5704e8cd4bc399c017f2ef7cf32e8f18f4e75a4fcc52782d933e9893c
+# Note: when using docker-compose, the ARG values below may be overridden
+# by invoking docker-compose build --build-arg
+# Choose the version you want within the docker-compose.yml build: 
+ARG DB=mysql
+#ARG DB=postgres
+ARG XWIKI_VERSION=10.8.1
+ARG XWIKI_DOWNLOAD_SHA256 ed9436b5704e8cd4bc399c017f2ef7cf32e8f18f4e75a4fcc52782d933e9893c
+ARG XWIKI_URL_PREFIX "http://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-distribution-war"
+# Default environment values that a shell would have set but docker doesnt
+ARG LOGNAME=xwiki
+ARG USER=xwiki
 
 # generic
 COPY root/. /
@@ -46,10 +46,10 @@ COPY root/. /
 # Use a proper readable bash file!
 RUN /bin/bash -c "source /build/xwiki-tomcat.sh"
 
-USER xwiki
+USER 888
 
-# Make the XWiki directory (the permanent directory is included in it) persist on the host (so that it's not recreated
-# across runs)
+# Make the XWiki directory (the permanent directory is included in it) persist on the host
+# (so that it's not recreated across runs)
 VOLUME /usr/local/xwiki
 
 # At this point the image is done and what remains below are the runtime configuration used by the user to configure
@@ -64,6 +64,16 @@ VOLUME /usr/local/xwiki
 #                hibernate.cfg.xml file.
 # - DB_HOST: The name of the host (or docker container) containing the database. Default is "db". This is used to
 #            configure xwiki's hibernate.cfg.xml file.
+
+# Default environment values
+ENV LOGNAME=$LOGNAME
+ENV USER=$USER
+ENV XWIKI_VERSION=$XWIKI_VERSION
+ENV DB_USER=xwiki
+ENV DB_PASSWORD=xwiki
+ENV DB_DATABASE=xwiki
+ENV POSTGRES_ROOT_PASSWORD=xwiki
+ENV MYSQL_ROOT_PASSWORD=xwiki
 
 # Example:
 #   docker run -it -e "DB_USER=xwiki" -e "DB_PASSWORD=xwiki" <imagename>
