@@ -17,8 +17,8 @@ services:
     # this ensures that we build 
     # the pre-built download does not support ARM
     build: 
-      context: 10/tomcat
- #    context: https://github.com/keithy/xwiki-contrib.git#keithy:10/tomcat
+  #   context: 10/tomcat
+      context: https://github.com/keithy/xwiki-contrib.git#keithy:10/tomcat
       dockerfile: Dockerfile
       # BUILDTIME ENVIRONMENT
       args:

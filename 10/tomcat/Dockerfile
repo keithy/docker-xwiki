@@ -34,8 +34,8 @@ MAINTAINER Vincent Massol <vincent@massol.net>
 ARG DB=mysql
 #ARG DB=postgres
 ARG XWIKI_VERSION=10.8.1
-ARG XWIKI_DOWNLOAD_SHA256 ed9436b5704e8cd4bc399c017f2ef7cf32e8f18f4e75a4fcc52782d933e9893c
-ARG XWIKI_URL_PREFIX "http://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-distribution-war"
+ARG XWIKI_DOWNLOAD_SHA256=ed9436b5704e8cd4bc399c017f2ef7cf32e8f18f4e75a4fcc52782d933e9893c
+ARG XWIKI_URL_PREFIX="http://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-distribution-war"
 # Default environment values that a shell would have set but docker doesnt
 ARG LOGNAME=xwiki
 ARG USER=xwiki
