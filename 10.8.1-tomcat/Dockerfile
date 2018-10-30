@@ -17,7 +17,10 @@
 # Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 # 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 # ---------------------------------------------------------------------------
-FROM tomcat:8-jre8-slim
+ARG BASE_IMAGE=tomcat
+ARG BASE_TAG=8-jre8-slim
+
+FROM ${BASE_IMAGE}:${BASE_TAG}
 
 #    ____  ____  ____      ____  _   __        _
 #   |_  _||_  _||_  _|    |_  _|(_) [  |  _   (_)

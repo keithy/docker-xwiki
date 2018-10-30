@@ -18,11 +18,13 @@ services:
     # the pre-built download does not support ARM
     build: 
    #   context: 10/tomcat
-      context: "https://github.com/keithy/docker-xwiki.git#keithy:10/tomcat"
+      context: "https://github.com/keithy/docker-xwiki.git#keithy:10-tomcat"
       dockerfile: Dockerfile
       # BUILDTIME ENVIRONMENT
       args:
         DB: mysql
+        # Its good practice to take the latest Dockerfile and copy the version and SHA here
+        # this ensures that the codebase of this installation is recorded/fixed. 
         XWIKI_VERSION: 10.8.1
         XWIKI_DOWNLOAD_SHA256: ed9436b5704e8cd4bc399c017f2ef7cf32e8f18f4e75a4fcc52782d933e9893c
     depends_on:
@@ -35,8 +37,8 @@ services:
       - DB_USER=xwiki
       - DB_PASSWORD=xwiki
       - DB_DATABASE=xwiki
-#      - DB_HOST=mariaDB # use TCP/IP
-      - DB_HOST=localhost # use socket
+      - DB_HOST=mariaDB # use TCP/IP
+#     - DB_HOST=localhost # use socket
     # Provide a name instead of an auto-generated id for the xwiki permanent directory configured in the Dockerfile,
     # to make it simpler to identify in 'docker volume ls'.
     volumes:
@@ -77,7 +79,8 @@ services:
 
   # To use this client: docker-compose run --rm client
   client:
-    image: yobasystems/alpine-mariadb:armhf
+ #   image: yobasystems/alpine-mariadb:armhf
+    image: keithy/alpine-mariadb:armhf
     container_name: mysql_CLI
     networks:
       - bridge
@@ -107,7 +110,7 @@ services:
       - bridge
     depends_on:
       - wiki
-    restart: always
+#    restart: always
 
 
 
