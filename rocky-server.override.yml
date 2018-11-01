@@ -20,6 +20,9 @@ volumes:
    
 services:
   wiki:
+    build:
+      # local definition
+      context: "10.9-tomcat"
     env_file:
       - /etc/xwiki_credentials.env
   client:
@@ -33,7 +36,7 @@ services:
       - --default-character-set=utf8
       - --init-command=GRANT ALL ON *.* TO `xwiki`@`%`
 
- nginx:
+  nginx:
     image: nginx:alpine
     ports:
       - 80:80

@@ -1,0 +1,61 @@
+version: '2'
+networks:
+  bridge:
+    driver: bridge
+        
+volumes:
+  db: 
+  data: 
+
+services:
+  wiki:
+    # once built the image has this name
+    image: "xwiki:10.9-slim"
+    build: 
+      # local definition
+      # context: "10.9-tomcat"
+      # remote definition
+      context: "https://github.com/keithy/docker-xwiki.git#keithy:latest"
+      # BUILDTIME ENVIRONMENT VARS
+      args:
+        DB: postgres
+        # Good practice to take the latest Dockerfile and copy the version and SHA here
+        # this ensures that the codebase of this installation is recorded/fixed.
+        XWIKI_VERSION: 10.9
+        XWIKI_DOWNLOAD_SHA256: 01d27367b9c709e325c168f7e3bf61d998ffcab4
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080" 
+    # RUNTIME ENVIRONMENT VARS
+    # The DB_USER/DB_PASSWORD/DB_HOST variables are patched into hibernate.cfg.xml
+    environment:
+      # default DB_USER etc are defined in DockerFile, but can be overridden
+      # using docker-compose.override.yml & environment: or env_file
+      - DB_HOST=postrges
+    # Named xwiki permanent directory
+    volumes:
+      - data:/usr/local/xwiki
+    # - /run/mysqld:/run/mysqld # access socket available on the host
+    networks:
+      - bridge
+    restart: always
+
+# The container that runs MySQL/MariaDB
+
+  postgres:
+    image: "postgres:9.5"
+    container_name: xwiki-postgres-db
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_ROOT_PASSWORD=xwiki
+      - POSTGRES_PASSWORD=xwiki
+      - POSTGRES_USER=xwiki
+      - POSTGRES_DB=xwiki
+      - POSTGRES_INITDB_ARGS="--encoding=UTF8"
+    networks:
+      - bridge
+    restart: always
+
+ 

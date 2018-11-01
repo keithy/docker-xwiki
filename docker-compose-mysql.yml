@@ -1,0 +1,93 @@
+version: '2'
+networks:
+  bridge:
+    driver: bridge
+        
+volumes:
+  db: 
+  data: 
+
+services:
+  wiki:
+    # once built the image has this name
+    image: "xwiki:10.9-slim"
+    build: 
+      # remote definition
+      context: "https://github.com/keithy/docker-xwiki.git#keithy:latest"
+      # BUILDTIME ENVIRONMENT VARS
+      args:
+        DB: mysql
+        # Good practice to take the latest Dockerfile and copy the version and SHA here
+        # this ensures that the codebase of this installation is recorded/fixed.
+        XWIKI_VERSION: 10.9
+        XWIKI_DOWNLOAD_SHA256: 01d27367b9c709e325c168f7e3bf61d998ffcab4
+    depends_on:
+      - mariaDB
+    ports:
+      - "8080:8080" 
+    # RUNTIME ENVIRONMENT VARS
+    # The DB_USER/DB_PASSWORD/DB_HOST variables are patched into hibernate.cfg.xml
+    environment:
+      # default DB_USER etc are defined in DockerFile, but can be overridden
+      # using docker-compose.override.yml & environment: or env_file
+      - DB_HOST=mariaDB # use TCP/IP
+    # - DB_HOST=localhost # use socket (not supported with mysql-java library
+    # Named xwiki permanent directory
+    volumes:
+      - data:/usr/local/xwiki
+    # - /run/mysqld:/run/mysqld # access socket available on the host
+    networks:
+      - bridge
+    restart: always
+
+# The container that runs MySQL/MariaDB
+
+  mariaDB:
+    # image: "mysql:5.7" 
+    image: "yobasystems/alpine-mariadb" #includes arm support
+    # Named mysql permanent data directory
+    volumes:
+      - db:/var/lib/mysql
+      - /run/mysqld:/run/mysqld # make the socket available on the host
+    # Create the initial MySQL database and user with these defaults
+    # See https://hub.docker.com/_/mysql/ for more details.
+    environment:
+      - MYSQL_ROOT_PASSWORD=xwiki
+      - MYSQL_USER=xwiki
+      - MYSQL_PASSWORD=xwiki
+      - MYSQL_DATABASE=xwiki
+    ports:
+      - "3306:3306"
+    networks:
+      - bridge
+    command: 
+      - --character-set-server=utf8 
+      - --collation-server=utf8_bin
+      - --explicit-defaults-for-timestamp=1
+    restart: always
+
+  # This runs once on #up (adds the necessary user privileges) and finishes
+  # Some would name this service as a one-shot -task
+  # but it is also useful as an interactive client.
+  # To use interactively: docker-compose run --rm client
+  client:
+    # image: "mysql:5.7" 
+    image: yobasystems/alpine-mariadb:armhf
+    container_name: mysql_CLI
+    networks:
+      - bridge
+    volumes:
+      - /run/mysqld:/run/mysqld # access the socket on the host
+    depends_on:
+      - mariaDB
+    entrypoint:
+      - mysql 
+      - --user=root     
+      - --password=xwiki # this can be replaced with a root password in .my.cnf
+      - --host=mariaDB
+      - --protocol=TCP
+      - --default-character-set=utf8
+      - --init-command=GRANT ALL ON *.* TO `xwiki`@`%`
+
+ 
+
