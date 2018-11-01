@@ -60,9 +60,7 @@ rm -rf /var/lib/apt/lists/*
 rm -rf /build 
 
 #ensure xwiki ownership
-chmod -R ug+w /usr/local/tomcat/webapps/ROOT
-chmod -R ug+w /usr/local/tomcat/temp
+chmod -R ug+w /usr/local/tomcat
 chmod -R ug+w /usr/local/xwiki/data
-chown -R xwiki:root /usr/local/tomcat/webapps/ROOT
-chown -R xwiki:root /usr/local/tomcat/temp
+chown -R xwiki:root /usr/local/tomcat
 chown -R xwiki:root /usr/local/xwiki/data

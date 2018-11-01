@@ -1,0 +1,52 @@
+# An example of a local overriding file
+# 1. custom volume drivers for this platform
+# 2. Credentials file used to setup xwiki end of connection
+# 3. mysql.cnf used to setup client
+
+# In other words, the first time the database is run, defaults are used
+# However if the passwords are changed, the new password can be placed in the 
+# credentials file, subsequent build of xwiki/client will pick up the new passwords
+# (Note the mysql/password is set in the persistent volume hibernate.cfg.xml anyhow)
+
+version: '2'
+
+volumes:
+   db:
+     driver: anybox/buttervolume:latest # btrfs volume driver
+   data:
+     driver: anybox/buttervolume:latest # btrfs volume driver
+   nginx:
+     driver: anybox/buttervolume:latest # btrfs volume driver
+   
+services:
+  wiki:
+    env_file:
+      - /etc/xwiki_credentials.env
+  client:
+    volumes:
+      - /etc/mysql.cnf:/root/.my.cnf
+    entrypoint:
+      - mysql 
+      - --user=root     
+      - --host=mariaDB
+      - --protocol=TCP
+      - --default-character-set=utf8
+      - --init-command=GRANT ALL ON *.* TO `xwiki`@`%`
+
+ nginx:
+    image: nginx:alpine
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - data:/usr/share/nginx/html:ro
+      - nginx:/etc/nginx:ro
+    networks:
+      - bridge
+    depends_on:
+      - wiki
+#    restart: always
+
+
+
+
