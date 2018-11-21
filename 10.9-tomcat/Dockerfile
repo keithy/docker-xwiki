@@ -47,7 +47,7 @@ ARG USER=xwiki
 COPY root/. /
 
 # Use a proper readable bash file!
-RUN /bin/bash -c "source /build/xwiki-tomcat.sh"
+RUN /bin/bash -c "source /build/xwiki-${BASE_IMAGE}-${BASE_TAG}.sh"
 
 USER 888
 
