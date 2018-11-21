@@ -17,9 +17,9 @@
 # Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 # 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 # ---------------------------------------------------------------------------
+
 ARG BASE_IMAGE=tomcat
 ARG BASE_TAG=8-jre8-slim
-
 FROM ${BASE_IMAGE}:${BASE_TAG}
 
 #    ____  ____  ____      ____  _   __        _
@@ -34,11 +34,13 @@ MAINTAINER Vincent Massol <vincent@massol.net>
 # Note: when using docker-compose, the ARG values below may be overridden
 # by invoking docker-compose build --build-arg
 # Choose the version you want within the docker-compose.yml build: 
+ARG BUILD_SCRIPT=xwiki-tomcat-default
 ARG DB=mysql
 #ARG DB=postgres
 ARG XWIKI_VERSION=10.8.1
 ARG XWIKI_DOWNLOAD_SHA256=ed9436b5704e8cd4bc399c017f2ef7cf32e8f18f4e75a4fcc52782d933e9893c
 ARG XWIKI_URL_PREFIX="http://maven.xwiki.org/releases/org/xwiki/platform/xwiki-platform-distribution-war"
+
 # Default environment values that a shell would have set but docker doesnt
 ARG LOGNAME=xwiki
 ARG USER=xwiki
@@ -47,7 +49,7 @@ ARG USER=xwiki
 COPY root/. /
 
 # Use a proper readable bash file!
-RUN /bin/bash -c "source /build/xwiki-tomcat.sh"
+RUN /bin/bash -c "source /build/${BUILD_SCRIPT}.sh"
 
 USER 888
 
@@ -75,6 +77,7 @@ ENV XWIKI_VERSION=$XWIKI_VERSION
 ENV DB_USER=xwiki
 ENV DB_PASSWORD=xwiki
 ENV DB_DATABASE=xwiki
+ENV DB_HOST=localhost
 ENV POSTGRES_ROOT_PASSWORD=xwiki
 ENV MYSQL_ROOT_PASSWORD=xwiki
 
