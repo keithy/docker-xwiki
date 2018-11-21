@@ -15,8 +15,12 @@ volumes:
      driver: anybox/buttervolume:latest # btrfs volume driver
    data:
      driver: anybox/buttervolume:latest # btrfs volume driver
+   web:
+     driver: anybox/buttervolume:latest # btrfs volume driver
    nginx:
      driver: anybox/buttervolume:latest # btrfs volume driver
+   wordpress_faith:
+     external: true
    
 services:
   wiki:
@@ -25,8 +29,12 @@ services:
       context: "10.9-tomcat"
     env_file:
       - /etc/xwiki_credentials.env
+  mariaDB:
+    image: "yobasystems/alpine-mariadb:armhf" #arm support
   client:
+    image: "yobasystems/alpine-mariadb:armhf" #arm support
     volumes:
+        # a place to put the root password when it changes
       - /etc/mysql.cnf:/root/.my.cnf
     entrypoint:
       - mysql 
@@ -38,11 +46,13 @@ services:
 
   nginx:
     image: nginx:alpine
+    command: [nginx-debug, '-g', 'daemon off;']
     ports:
       - 80:80
       - 443:443
     volumes:
-      - data:/usr/share/nginx/html:ro
+      - web:/web
+      - wordpress_faith:/faith
       - nginx:/etc/nginx:ro
     networks:
       - bridge

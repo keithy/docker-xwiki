@@ -5,7 +5,8 @@ networks:
         
 volumes:
   db: 
-  data: 
+  data:
+  web: 
 
 services:
   wiki:
@@ -35,6 +36,7 @@ services:
     # Named xwiki permanent directory
     volumes:
       - data:/usr/local/xwiki
+      - web:/usr/local/tomcat/webapps
     # - /run/mysqld:/run/mysqld # access socket available on the host
     networks:
       - bridge
@@ -72,7 +74,7 @@ services:
   # To use interactively: docker-compose run --rm client
   client:
     # image: "mysql:5.7" 
-    image: yobasystems/alpine-mariadb:armhf
+    image: yobasystems/alpine-mariadb
     container_name: mysql_CLI
     networks:
       - bridge
